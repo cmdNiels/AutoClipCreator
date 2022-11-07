@@ -102,3 +102,9 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Don't include config.json
+config.json
+
+# Don't include videos
+videos/
