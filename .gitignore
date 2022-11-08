@@ -108,3 +108,8 @@ config.json
 
 # Don't include videos
 videos/
+
+# Don't include ffmpeg executables
+ffmpeg/ffmpeg.exe
+ffmpeg/ffplay.exe
+ffmpeg/ffprobe.exe
