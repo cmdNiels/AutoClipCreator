@@ -20,7 +20,7 @@ export async function transformVideo(dir: string, startTime: string, duration: n
             '-i', `${origin}`,
             '-ss', startTime,
             '-t', `${duration.toString()}`,
-            '-vf', effectPresets.backgroundBlur,
+            // '-vf', effectPresets.backgroundBlur,
             output
         ];
 
@@ -33,7 +33,7 @@ export async function transformVideo(dir: string, startTime: string, duration: n
 
         ffmpeg.stderr.on('data', (data: string) =>
         {
-            log(LogTypes.warning, `${data}`);
+            // log(LogTypes.warning, `${data}`);
         });
 
         ffmpeg.on('close', () =>
@@ -79,7 +79,7 @@ export async function addMusic(inputDir: string, outputDir: string)
     {
         const options = [
             '-y',
-            '-i', './audio/SigmaMaleSuspense.mp3',
+            '-i', './assets/SigmaMaleSuspense.mp3',
             '-i', inputDir.replace(/(:)/g, '-'),
             '-filter_complex', '[0:a][1:a]amerge,pan=stereo|c0<c0+c2|c1<c1+c3[out]',
             '-map', '1:v?',
@@ -87,8 +87,6 @@ export async function addMusic(inputDir: string, outputDir: string)
             '-shortest',
             outputDir.replace(/(:)/g, '-')
         ];
-
-        console.log(options.join(' '))
 
         const ffmpeg = spawn(ffmpegLocation, options);
 
@@ -99,11 +97,48 @@ export async function addMusic(inputDir: string, outputDir: string)
 
         ffmpeg.stderr.on('data', (data: string) =>
         {
-            log(LogTypes.warning, `${data}`);
+            // log(LogTypes.warning, `${data}`);
         });
 
         ffmpeg.on('close', (code: number) =>
         {
+            log(LogTypes.info, `Done adding music.`);
+            resolve(code);
+        });
+    });
+}
+
+export async function addOverlay(inputDir: string, outputDir: string)
+{
+    return new Promise(async (resolve) =>
+    {
+        const options = [
+            '-y',
+            '-stream_loop', '-1',
+            '-t', '15',
+            '-i', './assets/MegaRamp.mp4',
+            '-i', inputDir.replace(/(:)/g, '-'),
+            '-filter_complex', '[1:v]scale=(610):-1[ovr],[0:v][ovr]overlay=(W-w)/2:(H-h)/20[out_v]',
+            '-map', '[out_v]',
+            '-map', '1:a?',
+            outputDir.replace(/(:)/g, '-')
+        ];
+
+        const ffmpeg = spawn(ffmpegLocation, options);
+
+        ffmpeg.stdout.on('data', (data: string) =>
+        {
+            // log(LogTypes.info, `stdout: ${data}`);
+        });
+
+        ffmpeg.stderr.on('data', (data: string) =>
+        {
+            // log(LogTypes.warning, `${data}`);
+        });
+
+        ffmpeg.on('close', (code: number) =>
+        {
+            log(LogTypes.info, `Done adding overlay.`);
             resolve(code);
         });
     });

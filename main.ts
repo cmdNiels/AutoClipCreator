@@ -2,7 +2,7 @@ import fs from 'fs';
 const args = process.argv.slice(2);
 import config, { addVideo } from "./src/config";
 import download from "./src/download";
-import { addMusic, transformVideo } from "./src/ffmpeg";
+import { addMusic, addOverlay, transformVideo } from "./src/ffmpeg";
 import { log, LogTypes, offsetTime } from "./src/helpers";
 import { getComments, setDetails } from './src/api';
 
@@ -37,10 +37,15 @@ function processVideo(videoId: string)
             const startTime = offsetTime(comments[i], 3);
             const videoName = await transformVideo(dir, startTime, 15) as string;
             const videoNameTemp = videoName + '.temp';
-            console.log(videoName);
+
             fs.renameSync(videoName, videoNameTemp);
             await addMusic(videoNameTemp, videoName);
             fs.unlinkSync(videoNameTemp);
+
+            fs.renameSync(videoName, videoNameTemp);
+            await addOverlay(videoNameTemp, videoName);
+            fs.unlinkSync(videoNameTemp);
+
             log(LogTypes.info, `Completed video with id '${videoId}' at ${startTime}`);
             resolve(0);
         }
@@ -62,8 +67,6 @@ async function init()
     {
         log(LogTypes.warning, 'Invalid Config!');
     }
-
-    log(LogTypes.info, 'Finished!');
 }
 
 if (args.length > 0)
